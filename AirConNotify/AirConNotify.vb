@@ -1,7 +1,17 @@
 ﻿
 Public Class AirConNotify
-    Private player As Media.SoundPlayer = Nothing
     Const TEST As Integer = 24
+
+    Private Sub AirConNotify_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        Dim os As System.OperatingSystem = System.Environment.OSVersion
+        If os.Platform = PlatformID.Win32NT Then
+            'メジャーバージョン番号が6以上ならば、Vista（または、Server 2008）以降
+            If os.Version.Major >= 6 Then
+                MsgBox("Windows Vista以降のOSでは、通常のAirConNotifyをご利用ください。", vbInformation, vbOKOnly)
+                Process.Start("https://github.com/KHiyowa/AirConNotify/releases/latest")
+            End If
+        End If
+    End Sub
 
 #Region "UI関連"
 
@@ -131,25 +141,16 @@ Public Class AirConNotify
         TaskTrayNi.ShowBalloonTip(10)
 
         ' サウンドを再生
-        If SoundCb.Checked = True Then PlaySound(CType(t, String) + ".wav")
+        PlaySound()
     End Sub
 
     ' サウンド再生
-    Private Sub PlaySound(WaveFile As String)
-        WaveFile = "wav\" + WaveFile
-
-        ' 読み込む
-
-        If IO.File.Exists(WaveFile) Then
-            player = New Media.SoundPlayer(WaveFile)          ' その時刻のファイルが存在するか確認
-        ElseIf IO.File.Exists("wav\default.wav") Then
-            player = New Media.SoundPlayer("wav\default.wav") ' 存在しなかったら、defaultファイルが存在するか確認
-        Else
-            Exit Sub ' 存在しなかったら、サウンドを再生しない
+    Private Sub PlaySound()
+        If GeneralRb.Checked Then
+            Media.SystemSounds.Beep.Play()
+        ElseIf InfoRb.Checked Then
+            Media.SystemSounds.Asterisk.Play()
         End If
-
-        '非同期再生
-        player.Play()
     End Sub
 
     ' 指定した時刻にチェックが入っているか調べる
@@ -185,7 +186,7 @@ Public Class AirConNotify
 
         ' すべての時刻のチェックを外す
         For Each item As Control In TimeGBox.Controls
-            If item.GetType() = GetType(CheckBox) Then
+            If item.GetType() Is GetType(CheckBox) Then
                 CType(item, CheckBox).Checked = False
             End If
         Next
@@ -201,7 +202,7 @@ Public Class AirConNotify
 
         ' 右側のボタン群を元に戻す
         NotifyTgb.Checked = True
-        SoundCb.Checked = True
+        InfoRb.Checked = True
         UnlockCb.Checked = False
         MinuteNud.Value = "0"
 
@@ -218,7 +219,7 @@ Public Class AirConNotify
 
     ' 更新確認
     Private Sub UpdateChk()
-        Process.Start("https://github.com/KHiyowa/AirConNotify/releases/latest")
+        Process.Start("https://github.com/KHiyowa/AirConNotifyforOldPC/releases/latest")
     End Sub
 
 #End Region
